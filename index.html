@@ -3,27 +3,54 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BonchHelp</title>
-    <link rel="stylesheet" href="style.css">
-
-    <!-- Стили и скрипты для FullCalendar -->
     <link href='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css' rel='stylesheet' />
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js'></script>
     <script src="https://cdn.jsdelivr.net/npm/ical.js/build/ical.min.js"></script>
-
+    <title>Календарь</title>
 </head>
 <body>
-    <h1>Добро пожаловать в BonchHelp</h1>
-    <div id="content">
-        <button onclick="loadSchedule()">Показать расписание</button>
-        <button onclick="loadMembers()">Список студентов</button>
-        <button onclick="loadSubjects()">Список предметов</button>
-        <div id="schedule"></div>
-        <div id="members"></div>
-        <div id="subjects"></div>
-    </div>
-    <script src="script.js"></script>
-    <script src="calendar_script.js"></script>
+    <div id="calendar"></div>
+
+    <script>
+      async function fetchICal(url) {
+        const response = await fetch(url);
+        const data = await response.text();
+        return data;
+      }
+
+      function initializeCalendar(events) {
+        var calendarEl = document.getElementById('calendar');
+
+        var calendar = new FullCalendar.Calendar(calendarEl, {
+          initialView: 'dayGridMonth',
+          events: events
+        });
+
+        calendar.render();
+      }
+
+      fetchICal('https://bonchbot.ru/export/7cfe3d2a765f437a9d0f805778f7072c')
+        .then(data => {
+          const jcalData = ICAL.parse(data);
+          const comp = new ICAL.Component(jcalData);
+          const events = comp.getAllProperties('vevent');
+
+          const eventsList = events.map(event => {
+            const summary = event.getFirstPropertyValue('summary');
+            const start = event.getFirstPropertyValue('dtstart').toString();
+            const end = event.getFirstPropertyValue('dtend').toString();
+            return {
+              title: summary,
+              start: start,
+              end: end
+            };
+          });
+
+          initializeCalendar(eventsList);
+        })
+        .catch(error => {
+          console.error('Ошибка при загрузке iCal:', error);
+        });
+    </script>
 </body>
 </html>
-
