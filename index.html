@@ -12,45 +12,48 @@
     <div id="calendar"></div>
 
     <script>
-      async function fetchICal(url) {
-        const response = await fetch(url);
-        const data = await response.text();
-        return data;
-      }
+      document.addEventListener('DOMContentLoaded', async function () {
+          async function fetchICal(url) {
+              const proxyUrl = 'https://cors-anywhere.herokuapp.com/';
+              const response = await fetch(proxyUrl + url);
+              const data = await response.text();
+              return data;
+          }
 
-      function initializeCalendar(events) {
-        var calendarEl = document.getElementById('calendar');
+          function initializeCalendar(events) {
+              var calendarEl = document.getElementById('calendar');
 
-        var calendar = new FullCalendar.Calendar(calendarEl, {
-          initialView: 'dayGridMonth',
-          events: events
-        });
+              var calendar = new FullCalendar.Calendar(calendarEl, {
+                  initialView: 'dayGridMonth',
+                  events: events
+              });
 
-        calendar.render();
-      }
+              calendar.render();
+          }
 
-      fetchICal('https://bonchbot.ru/export/7cfe3d2a765f437a9d0f805778f7072c')
-        .then(data => {
-          const jcalData = ICAL.parse(data);
-          const comp = new ICAL.Component(jcalData);
-          const events = comp.getAllProperties('vevent');
+          fetchICal('https://bonchbot.ru/export/7cfe3d2a765f437a9d0f805778f7072c')
+              .then(data => {
+                  const jcalData = ICAL.parse(data);
+                  const comp = new ICAL.Component(jcalData);
+                  const events = comp.getAllProperties('vevent');
 
-          const eventsList = events.map(event => {
-            const summary = event.getFirstPropertyValue('summary');
-            const start = event.getFirstPropertyValue('dtstart').toString();
-            const end = event.getFirstPropertyValue('dtend').toString();
-            return {
-              title: summary,
-              start: start,
-              end: end
-            };
-          });
+                  const eventsList = events.map(event => {
+                      const summary = event.getFirstPropertyValue('summary');
+                      const start = event.getFirstPropertyValue('dtstart').toString();
+                      const end = event.getFirstPropertyValue('dtend').toString();
+                      return {
+                          title: summary,
+                          start: start,
+                          end: end
+                      };
+                  });
 
-          initializeCalendar(eventsList);
-        })
-        .catch(error => {
-          console.error('Ошибка при загрузке iCal:', error);
-        });
+                  initializeCalendar(eventsList);
+              })
+              .catch(error => {
+                  console.error('Ошибка при загрузке iCal:', error);
+              });
+      });
     </script>
 </body>
 </html>
